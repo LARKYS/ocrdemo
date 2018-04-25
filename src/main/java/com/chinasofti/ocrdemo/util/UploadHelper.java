@@ -75,9 +75,13 @@ public class UploadHelper {
             throws Exception {
 
         String filename = file.getOriginalFilename();
+        System.out.println("======================filename:"+filename);
+
         String extName = filename.substring(filename.lastIndexOf("."))
                 .toLowerCase();
         String lastFileName = UUID.randomUUID().toString() + extName;
+
+        System.out.println("======================lastFileName:"+lastFileName);
         if (!path.endsWith(File.separator)) {
             path = path + File.separator;
         }

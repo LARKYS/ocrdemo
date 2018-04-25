@@ -4,15 +4,11 @@ import com.chinasofti.ocrdemo.bean.Items;
 import com.chinasofti.ocrdemo.bean.Words;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.mockito.exceptions.misusing.WrongTypeOfReturnValue;
-import org.omg.PortableServer.LIFESPAN_POLICY_ID;
-import sun.rmi.log.LogInputStream;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 
 public class ReadUtil {
 
@@ -72,9 +68,7 @@ public class ReadUtil {
                 items.setCategory("resume");
                 System.out.println("+++++++++++++"+items.getItemstring());
             }
-            getBaseInfo(itemlines,itemss.get(1),itemss.get(3),itemss.get(3),itemss.get(4),
-                    itemss.get(19),itemss.get(9),itemss.get(11),itemss.get(13),itemss.get(15),itemss.get(17),itemss.get(5));
-
+            getBaseInfo(itemlines,itemss);
         }
         //工作年限 workYears
         //开始工作时间
@@ -110,45 +104,48 @@ public class ReadUtil {
         return itemlines;
     }
 
-    private void getBaseInfo(List<Items> itemlines,
-                             Items items1, Items items2, Items items3,
-                             Items items4, Items items5, Items items6, Items items7,
-                             Items items8, Items items9, Items items10,Items items11) {
+    private void getBaseInfo(List<Items> itemlines,List<Items> itemss) {
             //姓名
-            items1.setKey("name");
-            itemlines.add(items1);
+            itemss.get(1).setKey("name");
+            itemlines.add(itemss.get(1));
             //求职状态
-            items2.setKey("jobStatus");
-            itemlines.add(items2);
+            itemss.get(2).setKey("jobStatus");
+            itemlines.add( itemss.get(2));
             //电话
-            items3.setKey("cellphone");
-            itemlines.add(items3);
+            itemss.get(3).setKey("cellphone");
+            itemlines.add( itemss.get(3));
             //email
-            items4.setKey("email");
-            itemlines.add(items4);
+            itemss.get(4).setKey("email");
+            itemlines.add( itemss.get(4));
             //学历
-            items5.setKey("education");
-            itemlines.add(items5);
+            if(itemss.get(19).getItemstring().equals("个人信息")){
+
+                itemss.get(18).setKey("education");
+                itemss.get(18).setItemstring(itemss.get(18).getItemstring().split(":")[1]);
+                itemlines.add(itemss.get(18));
+            }else{
+                itemss.get(19).setKey("education");
+                itemlines.add(itemss.get(19));
+            }
             //公司职位
-            items6.setKey("position");
-            itemlines.add(items6);
+            itemss.get(9).setKey("position");
+            itemlines.add(itemss.get(9));
             //专业
-            items7.setKey("major");
-            itemlines.add(items7);
+            itemss.get(11).setKey("major");
+            itemlines.add(itemss.get(11));
             //公司名称
-            items8.setKey("company");
-            itemlines.add(items8);
+            itemss.get(13).setKey("company");
+            itemlines.add( itemss.get(13));
             //毕业学校
-            items9.setKey("graduateSchool");
-            itemlines.add(items9);
+            itemss.get(15).setKey("graduateSchool");
+            itemlines.add( itemss.get(15));
             //行业
-            items10.setKey("profession");
-            itemlines.add(items10);
+            itemss.get(17).setKey("profession");
+            itemlines.add( itemss.get(17));
             //性别
-            getGener(itemlines,items11);
+            getGener(itemlines,itemss.get(5));
             //生日
-            System.out.println("items11"+items11.getItemstring());
-            getBirth(itemlines, items11);
+            getBirth(itemlines, itemss.get(5));
     }
 
     private static void getGener(List<Items> itemlines, Items itemss) {
@@ -180,7 +177,12 @@ public class ReadUtil {
         System.out.println("=====birth=====start=====");
         String birthDay  = itemss.getItemstring().replaceAll("[^(0-9)\\/(0-9)\\/(0-9)]", "");
         System.out.println("=====birth====birthDay2:"+birthDay);
-        String birthDay2 = birthDay.substring(2,12);
+        String birthDay2 =null;
+        if(birthDay.length()<12){
+            birthDay2 = "";
+        }else {
+            birthDay.substring(2,12);
+        }
         System.out.println("=====birth====birthDay2:"+birthDay2);
         Items birthdays = new Items();
             birthdays.setKey("birthday");
@@ -216,9 +218,6 @@ public class ReadUtil {
             return;
         }
 
-//        if(tt[1]==0||tt[1]==-1){
-//
-//        }
 
         List<Items> status = itemss.subList(tt[0]+1,tt[1]);
         for(Items rr : status){
@@ -275,6 +274,11 @@ public class ReadUtil {
                     itemss.get(i).setKey("evaluation");
                 }
                 itemlines.addAll( itemss.subList(er[0]+1,er[1]));
+            }
+            if(rr.getItemstring().contains("自我评价:")){
+                rr.setKey("evaluation");
+                rr.setItemstring(rr.getItemstring().split(":")[1]);
+                itemlines.add(rr);
             }
         }
     }
@@ -362,13 +366,15 @@ public class ReadUtil {
 
     private static void getEducation(List<Items> itemlines, List<Items> itemss) {
         int[] edu = getIndex(itemss,"教育经历","在校情况");
+
+        System.out.println("deu0:"+edu[0]+"  edu1:"+edu[1]);
         if(edu[0]==-1||edu[0]==0){
             return;
         }
-        if(edu[1]==-1){
+        if(edu[1]==-1||edu[1]==0){
             getIndex2(itemss, edu);
         }
-        List<Items> education = itemss.subList(edu[0]+1,edu[1]-1);
+        List<Items> education = itemss.subList(edu[0]+1,edu[1]);
         for(Items items : education ){
             items.setKey("educationExperience");
         }
@@ -821,8 +827,7 @@ public class ReadUtil {
                     }
                 }
 
-         getBaseInfo(itemlines,itemss.get(0),itemss.get(2),itemss.get(4),itemss.get(1),itemss.get(19),
-                 itemss.get(9),itemss.get(11),itemss.get(13),itemss.get(15),itemss.get(17),itemss.get(5));
+         getBaseInfo(itemlines,itemss);
 
             }
         System.out.println("+++++++++++address");
@@ -869,11 +874,12 @@ public class ReadUtil {
         StringBuffer trainingEx = new StringBuffer();
         StringBuffer evalu = new StringBuffer();
         for(Items items1 : items){
-            // System.out.println("_______111"+items1.toString());
-            System.out.println("_______key: "+items1.getKey());
-            System.out.println("_______itemstring："+items1.getItemstring());
+
             if(items1.getKey()==null){
-                jo.put("evaluation",evalu.append(items1.getItemstring()));
+                continue;
+            }
+            if(items1.getKey().equals("evaluation")){
+                evalu.append(items1.getItemstring());
                 continue;
             }
             if(items1.getKey().equals("name")){
@@ -968,22 +974,27 @@ public class ReadUtil {
                 continue;
             }
             if(items1.getKey().equals("workExperience")){
-                jo.put("workExperience",workExpe.append(items1.getItemstring()));
+                System.out.println("workExperience"+items1.getItemstring());
+                workExpe.append(items1.getItemstring());
+
                 continue;
             }
 
             if(items1.getKey().equals("projectExperience")){
-                jo.put("projectExperience",projectExp.append(items1.getItemstring()));
+
+
+                projectExp.append(items1.getItemstring());
+
                 continue;
             }
 
             if(items1.getKey().equals("educationExperience")){
-                jo.put("educationExperience",educationExp.append(items1.getItemstring()));
+                educationExp.append(items1.getItemstring());
                 continue;
             }
 
             if(items1.getKey().equals("trainingExperience")){
-                jo.put("trainingExperience",trainingEx.append(items1.getItemstring()));
+                trainingEx.append(items1.getItemstring());
                 continue;
             }
             if(items1.getKey().equals("languageAbility")){
@@ -996,12 +1007,18 @@ public class ReadUtil {
             }
         }
 
+        jo.put("evaluation",evalu.toString());
+        jo.put("workExperience",workExpe.toString());
+        jo.put("projectExperience",projectExp.toString());
+        jo.put("educationExperience",educationExp.toString());
+        jo.put("trainingExperience",trainingEx.toString());
         //Start fixing by Lin Yuan Yuan
-        System.out.println("jo: " + jo.toString());
+       // System.out.println("jo: " + jo.toString());
         json.add(jo);
-        System.out.println("json2: " + json.toString());
+       // System.out.println("json2: " + json.toString());
         //End fixing by Lin Yuan Yuan
 
+        System.out.println("++++++++++++++++"+json.toString());
         return json.toString();
     }
 
