@@ -1,6 +1,7 @@
 package com.chinasofti.ocrdemo.controller;
 
 import com.chinasofti.ocrdemo.service.OcrReconService;
+import com.chinasofti.ocrdemo.util.CsharpUtils;
 import com.chinasofti.ocrdemo.util.Json2String;
 import com.chinasofti.ocrdemo.util.SaveHelper;
 import com.chinasofti.ocrdemo.util.UploadHelper;
@@ -62,54 +63,6 @@ public class TenOcrController {
         return json2String.toString(result);
 
         }
-
-    @ResponseBody
-    @RequestMapping(value="/ocr/resume/recognition", method = RequestMethod.POST)
-    public String ocrResume(MultipartHttpServletRequest request,
-                           HttpServletResponse response) {
-        OcrReconService ocrReconService = null;
-        List<String> filePath = new ArrayList<String>();
-        //1 上传文件至服务器临时目录
-        // System.out.println("====start upload==");
-        //  List<MultipartFile> multipartFiles = UploadHelper.getFileSet(request, 1024 * 20, null);
-        Iterator iterator = request.getFileNames();
-        while(iterator.hasNext()){
-            System.out.println(iterator.next());
-        }
-        Collection<MultipartFile> multipartFiles = request.getFileMap().values();
-        String path = "C:\\temp" + File.separator;
-        System.out.println("====start upload=="+multipartFiles.size());
-        if (multipartFiles.size() == 0) {
-            // TODO 给出提示,不允许没选择文件点击上传
-            System.out.println("上传文件失败");
-            return null;
-        }
-        for (MultipartFile multipartFile : multipartFiles) {
-            try {
-                filePath.add(UploadHelper.uploadFile(multipartFile, path));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            // 拿到的imgPath就是图片的相对于contextPath的存储路径了
-        }
-        //2 开始识别并返回结果
-
-        for(String ss : filePath){
-            System.out.println("======file1 path:"+ss);
-        }
-
-        System.out.println(ocrReconService);
-        ocrReconService = new OcrReconService();
-        List<String> result = ocrReconService.reconAll(filePath);
-        //3 识别完成后删除临时文件
-        UploadHelper.deleteDir("C://Temp");
-        Json2String json2String = new Json2String();
-
-        System.out.println(json2String.getResumeData(result));
-        return json2String.getResumeData(result);
-
-    }
-
 
         @ResponseBody
         @RequestMapping(value="/ocr/picture/save", method = RequestMethod.POST)

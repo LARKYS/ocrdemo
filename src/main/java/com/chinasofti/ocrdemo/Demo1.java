@@ -28,7 +28,7 @@ public class Demo1 {
 
         String result = json2String.getMicString(json);
 
-        //System.out.println(result);
+        System.out.println(result);
 
 
 

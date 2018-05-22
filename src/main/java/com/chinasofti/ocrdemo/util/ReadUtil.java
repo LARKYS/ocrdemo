@@ -104,6 +104,72 @@ public class ReadUtil {
         return itemlines;
     }
 
+    public List<Items> getMicAllInfo(List<Items> itemlines, List<Items> itemss){
+
+        boolean invoice = false;
+        for (Items items : itemss){
+            if(items.getItemstring().contains("发票")
+                    ||items.getItemstring().contains("支票")
+                    ||items.getItemstring().contains("保险")){
+                invoice = true;
+            }
+        }
+        if(invoice){
+            for (Items items : itemss){
+                items.setCategory("invoice");
+            }
+            return itemss;
+        }
+
+        boolean page1 = false;
+        for (Items items : itemss){
+            if(items.getItemstring().contains("最近工作")){
+                page1 = true;
+            }
+            items.setCategory("resume");
+        }
+        if(page1){
+            for (Items items : itemss){
+                items.setCategory("resume");
+                System.out.println("+++++++++++++"+items.getItemstring());
+            }
+            getMicBaseInfo(itemlines,itemss);
+        }
+        //工作年限 workYears
+        //开始工作时间
+
+
+        //婚姻状态
+        //所在城市
+        //地址
+
+        getPerInfo(itemlines, itemss);
+
+        //到岗时间
+
+        //期望月薪
+        //工作性质
+        //自我评价
+
+        getMicJobInfo(itemlines, itemss);
+
+        //项目经历
+        getProjecEx(itemlines, itemss);
+        //工作经历
+        getMicJobExp(itemlines, itemss);
+
+        //教育经历
+        getEducation(itemlines, itemss);
+
+        //语言
+        //技能
+        getSkills(itemlines, itemss);
+        //培训经历
+        getTrain(itemlines, itemss);
+        return itemlines;
+    }
+
+
     private void getBaseInfo(List<Items> itemlines,List<Items> itemss) {
             //姓名
             itemss.get(1).setKey("name");
@@ -146,6 +212,46 @@ public class ReadUtil {
             getGener(itemlines,itemss.get(5));
             //生日
             getBirth(itemlines, itemss.get(5));
+    }
+
+    private void getMicBaseInfo(List<Items> itemlines,List<Items> itemss){
+        //姓名
+        itemss.get(1).setKey("name");
+        itemlines.add(itemss.get(1));
+        //求职状态
+        itemss.get(4).setKey("jobStatus");
+        itemlines.add( itemss.get(4));
+        //电话
+        itemss.get(3).setKey("cellphone");
+        itemlines.add( itemss.get(3));
+        //email
+        itemss.get(2).setKey("email");
+        itemlines.add( itemss.get(2));
+        //学历
+        itemss.get(15).setKey("education");
+        itemlines.add(itemss.get(15));
+        //公司职位
+        itemss.get(11).setKey("position");
+        itemss.get(11).setItemstring(itemss.get(11).getItemstring().split("：")[1]);
+        itemlines.add(itemss.get(11));
+        //专业
+        itemss.get(9).setKey("major");
+        itemlines.add(itemss.get(9));
+        //公司名称
+        itemss.get(14).setKey("company");
+        itemlines.add( itemss.get(14));
+        //毕业学校
+        itemss.get(12).setKey("graduateSchool");
+        itemlines.add( itemss.get(12));
+        //行业
+        itemss.get(17).setKey("profession");
+        System.out.println("==--=="+ itemss.get(17).getItemstring());
+        itemss.get(17).setItemstring(itemss.get(17).getItemstring().split("：")[1]);
+        itemlines.add( itemss.get(17));
+        //性别
+        getGener(itemlines,itemss.get(6));
+        //生日
+        getMicBirth(itemlines, itemss.get(6));
     }
 
     private static void getGener(List<Items> itemlines, Items itemss) {
@@ -199,6 +305,17 @@ public class ReadUtil {
             }
             birthdays.setWords(birthWords);
         itemlines.add(birthdays);
+    }
+
+    private static void getMicBirth(List<Items> itemlines, Items itemss){
+
+        String result = itemss.getItemstring().split("（")[1];
+        String birth = result.split("）")[0];
+        Items birthdays = new Items();
+        birthdays.setKey("birthday");
+        birthdays.setItemstring(birth);
+        itemlines.add(birthdays);
+
     }
 
     private static void getPerInfo(List<Items> itemlines, List<Items> itemss) {
@@ -283,6 +400,56 @@ public class ReadUtil {
         }
     }
 
+    private static void getMicJobInfo(List<Items> itemlines, List<Items> itemss){
+        int[] works = getIndex(itemss,"求职意向","工作经验");
+        if(works[0]==-1||works[0]==0){
+            return;
+        }
+        if(works[1]==-1||works[1]==0){
+            works[1] = getIndexOne(itemss,"项目经验");
+            if(works[1]==-1||works[1]==0){
+                works[1] = getIndexOne(itemss,"教育经历");
+                if(works[1]==-1||works[1]==0){
+                    works[1] = getIndexOne(itemss,"在校情况");
+                    if(works[1]==-1||works[1]==0){
+                        getIndex2(itemss, works);
+                    }
+                }
+            }
+        }
+        List<Items> items1 = itemss.subList(works[0]+1,works[1]);
+        for(Items rr : items1){
+            if(rr.getItemstring().equals("期望薪资:")){
+                items1.get(items1.indexOf(rr)-1).setKey("expectedSalary");
+                itemlines.add( items1.get(items1.indexOf(rr)+1));
+            }
+            if(rr.getItemstring().equals("工作类型:")){
+                items1.get(items1.indexOf(rr)-1).setKey("jobNature");
+                itemlines.add( items1.get(items1.indexOf(rr)+1));
+            }
+            if(rr.getItemstring().equals("自我评价：")){
+                int[] er = getIndex(itemss,"自我评价：","工作经验");
+                if(er[1]==-1||er[1]==0){
+                    if(getIndexOne(itemss,"项目经验")==-1||getIndexOne(itemss,"项目经验")==0){
+                        getMorInfo(itemss, er);
+                    }
+                }
+
+                for(int i = er[0]+1;i<er[1]-1;i++){
+                    itemss.get(i).setKey("evaluation");
+                }
+                itemss.get(er[0]-1).setKey("evaluation");
+                itemlines.add(itemss.get(er[0]-1));
+                itemlines.addAll( itemss.subList(er[0]+1,er[1]));
+            }
+            if(rr.getItemstring().contains("自我评价:")){
+                rr.setKey("evaluation");
+                rr.setItemstring(rr.getItemstring().split(":")[1]);
+                itemlines.add(rr);
+            }
+        }
+    }
+
     private static void getMorInfo(List<Items> itemss, int[] er) {
         if(er[1]==-1||er[1]==0){
             er[1] = getIndexOne(itemss,"教育经历");
@@ -329,6 +496,20 @@ public class ReadUtil {
         }
         getMorInfo(itemss, job);
         List<Items> jobs = itemss.subList(job[0]+1,job[1]);
+        for(Items items : jobs){
+            items.setKey("workExperience");
+        }
+        itemlines.addAll(jobs);
+    }
+
+    private static void getMicJobExp(List<Items> itemlines, List<Items> itemss) {
+        int[] job = getIndex(itemss,"工作经验","项目经验");
+
+        if(job[0]==-1||job[0]==0||job[1]==0||job[1]==-1){
+            return;
+        }
+        getMorInfo(itemss, job);
+        List<Items> jobs = itemss.subList(job[0]+1,job[1]-1);
         for(Items items : jobs){
             items.setKey("workExperience");
         }
@@ -412,10 +593,10 @@ public class ReadUtil {
                 items.setCategory("insurance");
             }
             //分支机构
-            itemss.get(4).setKey(itemss.get(4).getItemstring().split("：")[0]);
-            itemss.get(4).setItemstring(itemss.get(4).getItemstring().split("：")[1]);
-            itemss.get(4).setWords(getWords(itemss.get(4).getWords()));
-            itemlines.add(itemss.get(4));
+            itemss.get(5).setKey(itemss.get(5).getItemstring().split("：")[0]);
+            itemss.get(5).setItemstring(itemss.get(5).getItemstring().split("：")[1]);
+            itemss.get(5).setWords(getWords(itemss.get(5).getWords()));
+            itemlines.add(itemss.get(5));
 
             String start = "被保险人";
             //被保险人保险合同编号
@@ -645,26 +826,26 @@ public class ReadUtil {
             itemss.get(52).setKey("事故发生地点");
             itemlines.add(itemss.get(52));
             //事故及简要经过
-            itemss.get(50).setKey("原因及简要经过");
-            itemlines.add(itemss.get(50));
+            itemss.get(51).setKey("原因及简要经过");
+            itemlines.add(itemss.get(51));
             //诊断结果
 
             Items itemsResu = new Items();
             itemsResu.setKey("诊断结果");
-            itemsResu.setPageNum(itemss.get(50).getPageNum());
-            itemsResu.setItemstring(itemss.get(50).getItemstring());
-            List<Words> wordsList9 = itemss.get(50).getWords();
+            itemsResu.setPageNum(itemss.get(51).getPageNum());
+            itemsResu.setItemstring(itemss.get(51).getItemstring());
+            List<Words> wordsList9 = itemss.get(51).getWords();
             List<Words> wordsList8 = new ArrayList<>();
             for(int i=wordsList9.size()-4;i<wordsList9.size();i++){
                 wordsList8.add(wordsList9.get(i));
             }
             itemsResu.setWords(wordsList8);
-            itemsResu.setItemcoord(itemss.get(50).getItemcoord());
+            itemsResu.setItemcoord(itemss.get(51).getItemcoord());
             itemsResu.setCategory("insurance");
             itemlines.add(itemsResu);
             //索赔金额
-            itemss.get(51).setKey("索赔金额");
-            itemlines.add(itemss.get(51));
+            itemss.get(50).setKey("索赔金额");
+            itemlines.add(itemss.get(50));
 
             //事故是否经公安、交警、劳动、卫生部门或其他部门处理
             itemss.get(58).setKey("事故是否经公安、交警、劳动、卫生部门或其他部门处理");
@@ -720,8 +901,8 @@ public class ReadUtil {
 
             //保险营销员姓名
 
-            List<Words> wordsList111 = itemss.get(82).getWords();
-            List<Words> name = new ArrayList<>();
+            List<Words> wordsList111 = itemss.get(85).getWords();
+            System.out.println("87878787:"+itemss.get(85).getItemstring());
             int nameValue = 0;
             int numverVaule = 0;
             for (Words words : wordsList111){
@@ -739,17 +920,17 @@ public class ReadUtil {
                     nameEndList.add(words);
                 }
             }
-            itemss.get(82).setKey("保险营销员姓名");
-            itemss.get(82).setWords(nameEndList);
-            itemlines.add(itemss.get(82));
+            itemss.get(85).setKey("保险营销员姓名");
+            itemss.get(85).setWords(nameEndList);
+            itemlines.add(itemss.get(85));
 
             //编号
 
             Items number = new Items();
             number.setItemstring("编号");
             number.setKey("编号");
-            number.setItemcoord(itemss.get(82).getItemcoord());
-            number.setPageNum(itemss.get(82).getPageNum());
+            number.setItemcoord(itemss.get(85).getItemcoord());
+            number.setPageNum(itemss.get(85).getPageNum());
             List<Words> numWord = new ArrayList<>();
             for (Words words : wordsList111){
                 if(words.getCharacter().matches("^[0-9]*$")){
@@ -762,30 +943,30 @@ public class ReadUtil {
 
             //营销服务部
 
-            itemss.get(85).setKey("营销服务部");
-            itemlines.add(itemss.get(85));
+            itemss.get(82).setKey("营销服务部");
+            itemlines.add(itemss.get(82));
             //组别
-            itemss.get(87).setKey("组别");
-            itemlines.add(itemss.get(87));
+            itemss.get(86).setKey("组别");
+            itemlines.add(itemss.get(86));
             //联系电话
-            itemss.get(84).setKey("联系电话");
-            itemss.get(84).setItemstring(itemss.get(84).getItemstring().replaceAll("^[0-9]*$",""));
-            List<Words> tel = itemss.get(84).getWords();
+            itemss.get(87).setKey("联系电话");
+            itemss.get(87).setItemstring(itemss.get(87).getItemstring().replaceAll("^[0-9]*$",""));
+            List<Words> tel = itemss.get(87).getWords();
             List<Words> telEnd = new ArrayList<>();
             for(Words words : tel){
                 if(words.getCharacter().matches("^[0-9]*$")){
                     telEnd.add(words);
                 }
             }
-            itemss.get(84).setWords(telEnd);
-            itemlines.add(itemss.get(84));
+            itemss.get(87).setWords(telEnd);
+            itemlines.add(itemss.get(87));
 
             //保险合同编号
-            itemss.get(88).setKey("保险合同编号");
-            itemss.get(88).setItemstring(itemss.get(88).getItemstring().replaceAll("^[a-zA-Z]+[0-9]*$",""));
+            itemss.get(90).setKey("保险合同编号");
+            itemss.get(90).setItemstring(itemss.get(90).getItemstring().replaceAll("^[a-zA-Z]+[0-9]*$",""));
             int tag = 0;
             int per = 0;
-            List<Words> contractNumber = itemss.get(88).getWords();
+            List<Words> contractNumber = itemss.get(90).getWords();
             for(Words words : contractNumber){
                 if(words.getCharacter().equals("：")){
                     tag = contractNumber.indexOf(words);
@@ -796,12 +977,12 @@ public class ReadUtil {
             }
             List<Words> contracNumEnd = contractNumber.subList(tag,per);
 
-            itemss.get(88).setWords(contracNumEnd);
+            itemss.get(90).setWords(contracNumEnd);
 
             //被保险人姓名
 
-            itemss.get(90).setKey("被保险人姓名");
-            itemlines.add(itemss.get(90));
+            itemss.get(89).setKey("被保险人姓名");
+            itemlines.add(itemss.get(89));
 
             return itemlines;
         }
@@ -974,7 +1155,6 @@ public class ReadUtil {
                 continue;
             }
             if(items1.getKey().equals("workExperience")){
-                System.out.println("workExperience"+items1.getItemstring());
                 workExpe.append(items1.getItemstring());
 
                 continue;
@@ -1006,19 +1186,12 @@ public class ReadUtil {
                 continue;
             }
         }
-
         jo.put("evaluation",evalu.toString());
         jo.put("workExperience",workExpe.toString());
         jo.put("projectExperience",projectExp.toString());
         jo.put("educationExperience",educationExp.toString());
         jo.put("trainingExperience",trainingEx.toString());
-        //Start fixing by Lin Yuan Yuan
-       // System.out.println("jo: " + jo.toString());
         json.add(jo);
-       // System.out.println("json2: " + json.toString());
-        //End fixing by Lin Yuan Yuan
-
-        System.out.println("++++++++++++++++"+json.toString());
         return json.toString();
     }
 

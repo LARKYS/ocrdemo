@@ -73,6 +73,7 @@ public class Json2String {
         List<Items> itemsEnd = new ArrayList<>();
         for(List<Items> list : items){
             getSortList(list);
+            //getSortList2(list);
             itemsEnd.addAll(list);
         }
 
@@ -162,7 +163,7 @@ public class Json2String {
             items1.setItemstring(lines1.getItemstring());
             items1.setWords(lines1.getWords());
             items1.setItemcoord(lines1.getItemcoord());
-            items1.setSort(lines1.getItemcoord().getY());
+            items1.setSort(lines1.getItemcoord().getY()+lines1.getItemcoord().getHeight());
             items.add(items1);
            // System.out.println("====MicSof===Itemstring:"+lines1.getItemstring()+"imcoord:"+items1.getSort());
         }
@@ -173,6 +174,19 @@ public class Json2String {
     public static List<Items> getSortList(List<Items> list){
         Collections.sort(list, (o1, o2) -> {
             if(o1.getSort()>o2.getSort()){
+                return 1;
+            }
+            if(o1.getSort()==o2.getSort()){
+                return 0;
+            }
+            return -1;
+        });
+        return list;
+    }
+
+    public static List<Items> getSortList2(List<Items> list){
+        Collections.sort(list, (o1, o2) -> {
+            if(o1.getItemcoord().getX()>o2.getItemcoord().getX()){
                 return 1;
             }
             if(o1.getSort()==o2.getSort()){

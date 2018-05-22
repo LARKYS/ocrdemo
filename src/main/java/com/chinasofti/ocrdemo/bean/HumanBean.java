@@ -27,7 +27,7 @@ public class HumanBean {
     //"邮箱"
     private String email;
     //"生日"
-    private Date birthday;
+    private String birthday;
     //"所在城市"
     private String city;
     //"地址"
@@ -153,11 +153,11 @@ public class HumanBean {
         this.email = email;
     }
 
-    public Date getBirthday() {
+    public String getBirthday() {
         return birthday;
     }
 
-    public void setBirthday(Date birthday) {
+    public void setBirthday(String birthday) {
         this.birthday = birthday;
     }
 

@@ -20,7 +20,7 @@ import java.util.List;
 
 public class OcrReconService {
 
-    public static final String subscriptionKey = "f240f0b770a9432f96ca9dcbe3e44f48";
+    public static final String subscriptionKey = "44b5402bed14446b857a37e30222d7a6";
     public static final String uriBase = "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0/ocr";
 
     public static final String appId = "1251697081";
